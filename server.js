@@ -61,13 +61,28 @@ app.post(`/api/notes`, (req, res) => {
 
    });
 
+// DELETE request for notes
+app.delete('/api/notes/:id', (req, res) => {
+
+    const id = req.params.id;
+    fs.readFile('./db/db.json', 'utf-8', (err, data) => {
+        const parsedNotes = JSON.parse(data);
+        const updatedNotes = parsedNotes.filter((note) => note.id !== id);
+
+    fs.writeFile('./db/db.json', JSON.stringify(updatedNotes, null, 4), (err) => {
+         err ? console.log(err) : console.log('successfully deleted note')
+    })
+        res.json(`Note with id ${id} deleted`);
+    })
+})
+
 // GET route for notes page
 app.get('/notes', (req, res) =>
     res.sendFile(path.join(__dirname, '/public/notes.html'))
 );
 
 // GET route for landing page
-app.get('/', (req, res) =>
+app.get('*', (req, res) =>
     res.sendFile(path.join(__dirname, '/public/index.html'))
 );
 
