@@ -4,6 +4,7 @@ const path = require(`path`);
 const fs = require(`fs`);
 const notes = require (`./db/db.json`)
 const app = express()
+const uuid = require('uuid');
 
 // Middleware for parsing JSON and urlencoded form data
 app.use(express.json());
@@ -11,17 +12,64 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 
-// GET route for landing page
-app.get('/', (req, res) =>
-    res.sendFile(path.join(__dirname, '/public/index.html'))
-);
+// GET request for notes
+app.get('/api/notes', (req, res) => {
+    // Send json 
+    fs.readFile('./db/db.json', 'utf-8', (err, data) => {
+        if (err) {
+            console.log(err);
+        } else {
+            res.json(JSON.parse(data));
+        }
+    })
+});
+
+// POST request for notes
+app.post(`/api/notes`, (req, res) => {
+   
+    const {title, text} = req.body;
+
+    if (title && text) {
+        const newNote = {
+            title,
+            text,
+            id: uuid.v4()
+        }
+
+        fs.readFile('./db/db.json', 'utf-8', (err, data) => {
+            if (err) {
+                console.log(err);
+            } else {
+                const parsedNotes = JSON.parse(data);
+                parsedNotes.push(newNote)
+                fs.writeFile('./db/db.json', JSON.stringify(parsedNotes, null, 4), (err) => {
+                    err ? console.log(err) : console.log('successfully added note')
+                })
+            }
+        })
+
+        const response = {
+            status: 'success',
+            body: newNote
+        }
+
+        console.log(response);
+        res.json(response);
+    } else {
+        res.json('unable to post note')
+    }
+
+   });
 
 // GET route for notes page
 app.get('/notes', (req, res) =>
     res.sendFile(path.join(__dirname, '/public/notes.html'))
 );
 
-
+// GET route for landing page
+app.get('/', (req, res) =>
+    res.sendFile(path.join(__dirname, '/public/index.html'))
+);
 
 // Tell the server to listen for request
 app.listen(PORT, () => {
