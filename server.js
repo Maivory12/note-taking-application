@@ -61,7 +61,7 @@ app.post(`/api/notes`, (req, res) => {
 
    });
 
-// DELETE request for notes
+//DELETE request for notes
 app.delete('/api/notes/:id', (req, res) => {
 
     const id = req.params.id;
